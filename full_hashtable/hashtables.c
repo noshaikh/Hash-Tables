@@ -166,7 +166,29 @@ void hash_table_remove(HashTable *ht, char *key)
  ****/
 char *hash_table_retrieve(HashTable *ht, char *key)
 {
-
+  unsigned int checkHash = hash(key, ht->capacity);
+  if (ht->storage[checkHash] != NULL)
+  {
+    if (strcmp(ht->storage[checkHash]->key, key) == 0)
+    {
+      return ht->storage[checkHash]->value;
+    }
+    else
+    {
+      LinkedPair *checkPair = ht->storage[checkHash]->next;
+      while (checkPair)
+      {
+        if (strcmp(checkPair->key, key) == 0)
+        {
+          return checkPair->value;
+        }
+        else
+        {
+          checkPair = checkPair->next;
+        }
+      }
+    }
+  }
   return NULL;
 }
 
@@ -177,6 +199,12 @@ char *hash_table_retrieve(HashTable *ht, char *key)
  ****/
 void destroy_hash_table(HashTable *ht)
 {
+  for (int i = 0; i < ht->capacity; i++)
+  {
+    destroy_pair(ht->storage[i]);
+  }
+  free(ht->storage);
+  free(ht);
 }
 
 /****
@@ -189,7 +217,11 @@ void destroy_hash_table(HashTable *ht)
  ****/
 HashTable *hash_table_resize(HashTable *ht)
 {
-  HashTable *new_ht;
+  HashTable *new_ht = create_hash_table(ht->capacity * 2);
+  for (int i = 0; i < ht->capacity; i++)
+  {
+    new_ht->storage[i] = ht->storage[i];
+  }
 
   return new_ht;
 }
